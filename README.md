@@ -12,9 +12,9 @@ The **proper-ternary** ESLint plugin provides rules that control the definitions
 
 The rules defined in this plugin:
 
-* [`"location"`](#rule-location): controls where a `? :` ternary expression can appear in program structure.
-
 * [`"nested"`](#rule-nested): controls the nesting of `? :` ternary expressions.
+
+* [`"parens"`](#rule-parens): controls which kinds of expressions in ternary expression clauses need to be delimited with surrounding `( .. )` parentheses.
 
 ## Enabling The Plugin
 
@@ -98,25 +98,41 @@ To turn this rule on:
 "@getify/proper-ternary/nested": "error"
 ```
 
-The main purpose of this rule is to avoid readability harm for `? :` ternary expressions with confusing nesting.
+The main purpose of this rule is to avoid readability harm for `? :` ternary expressions with confusing nesting of other ternary expressions.
 
-By forbidding nesting, the reader can clearly understand what the ternary will result in.
+By forbidding confusing nesting, the reader can more clearly understand what the ternary will result in.
 
 For example:
 
 ```js
-// TODO
+var name = userData ? userData.name : "-empty-";
 ```
 
-TODO. Therefore, the **proper-ternary**/*nested* rule would not report any errors.
+This ternary expression doesn't have any other ternary expression nested in it. It's much clearer to figure out what its behavior will be. Therefore, the **proper-ternary**/*nested* rule would not report any errors.
 
-By contrast, this rule *would* report errors for:
+By contrast, this rule *would* default to reporting errors for each of these statements:
 
 ```js
-// TODO
+var name =
+    (typeof isLoggedIn == "function" ? isLoggedIn() : false)
+        ? userData.name
+        : "-empty-";
+
+var email =
+    userData != null
+        ? (userData.email != "" ? userData.email : "nobody@email.tld")
+        : "-empty-";
+
+var accountType =
+    userData.type == 1 ? "admin" :
+    userData.type == 2 ? "manager" :
+    userData.type == 3 ? "vendor" :
+    "customer";
 ```
 
-TODO
+The `name` assignment statement has a ternary expression nested inside the "test" clause of the outer ternary expression. The `email` assignment statement has a ternary expression nested inside the "then" (aka "consequent") clause of the outer ternary expression. The `accountType` assignment statement nests ternary expressions in the "else" (aka "alternate") clauses of their outer ternary expressions. Also, the `accountType` assignment statement has **two levels of nesting**, whereas the `name` and `email` assignment statements each have ternary expressions with **one level of nesting**.
+
+By default, ternary expression nesting is forbidden in all three ternary clauses, and nesting depth is furthermore limited to one level. To allow nesting in a specific clause (`"test"`, `"then"`, and `"else"`), that clause type must be configured on. Additionally, to allow nesting beyond one level, the `"depth"` configuration must be increased.
 
 ### Rule Configuration
 
@@ -128,8 +144,6 @@ The **proper-ternary**/*nested* rule can be configured with various combinations
 
 * [`"else"`](#rule-nested-configuration-clauses) (default: `false`) allows a ternary expression nested in the "else" (aka, "alternate") clause of another ternary expression.
 
-* [`"parens"`](#rule-nested-configuration-parens) (default: `true`) requires a nested ternary expression
-
 * [`"depth"`](#rule-nested-configuration-depth) (default: `1`) controls how many levels of nesting are allowed. To use this option, you must also enable at least one of the `"test"` / `"then"` / `"else"` clause modes.
 
 #### Rule `"nested"` Configuration: Clauses
@@ -138,32 +152,6 @@ To configure the `"test"`, `"then"`, and `"else"` rule modes (each default: `fal
 
 ```json
 "@getify/proper-ternary/nested": [ "error", { "test": true, "then": true, "else": true }
-```
-
-TODO
-
-For example:
-
-```js
-// TODO
-```
-
-TODO
-
-By contrast, this rule *would* report errors for:
-
-```js
-// TODO
-```
-
-TODO
-
-#### Rule `"nested"` Configuration: `"parens"`
-
-To configure this rule mode (default: `true`):
-
-```json
-"@getify/proper-ternary/nested": [ "error", { "parens": true } ]
 ```
 
 TODO

@@ -29,11 +29,10 @@ QUnit.test( "NESTED (default): violating", function test(assert){
 		{ ruleId: ruleId2, messageId: messageId2, message: message2, } = {},
 		{ ruleId: ruleId3, messageId: messageId3, message: message3, } = {},
 		{ ruleId: ruleId4, messageId: messageId4, message: message4, } = {},
-		{ ruleId: ruleId5, messageId: messageId5, message: message5, } = {},
 	] = results || [];
 
-	assert.expect( 14 );
-	assert.strictEqual( results.length, 5, "only 5 errors" );
+	assert.expect( 12 );
+	assert.strictEqual( results.length, 4, "only 4 errors" );
 	assert.strictEqual( ruleId1, "@getify/proper-ternary/nested", "ruleId1" );
 	assert.strictEqual( messageId1, "notHere", "messageId1" );
 	assert.ok( /'test' clause/.test(message1), "message1" );
@@ -45,6 +44,4 @@ QUnit.test( "NESTED (default): violating", function test(assert){
 	assert.strictEqual( ruleId4, "@getify/proper-ternary/nested", "ruleId4" );
 	assert.strictEqual( messageId4, "notHere", "messageId4" );
 	assert.ok( /'else' clause/.test(message4), "message4" );
-	assert.strictEqual( ruleId5, "@getify/proper-ternary/nested", "ruleId5" );
-	assert.strictEqual( messageId5, "needParens", "messageId5" );
 } );
