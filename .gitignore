@@ -1,0 +1,6 @@
+.coveralls.yml
+.history
+node_modules/
+dist/
+coverage/
+test-snippets/

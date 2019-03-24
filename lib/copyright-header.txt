@@ -1,0 +1,5 @@
+/*! @getify/eslint-plugin-proper-ternary
+	v${version} (c) ${year} Kyle Simpson
+	MIT License: http://getify.mit-license.org
+*/
+
