@@ -14,7 +14,7 @@ The rules defined in this plugin:
 
 * [`"nested"`](#rule-nested): controls the nesting of `? :` ternary expressions.
 
-* [`"parens"`](#rule-parens): controls which kinds of expressions in ternary expression clauses need to be delimited with surrounding `( .. )` parentheses.
+* [`"parens"`](#rule-parens): requires surrounding `( .. )` parentheses around specific kinds of expressions in ternary expression clauses.
 
 ## Enabling The Plugin
 
@@ -29,7 +29,8 @@ To load the plugin and enable its rules via a local or global `.eslintrc.json` c
     "@getify/proper-ternary"
 ],
 "rules": {
-    "@getify/proper-ternary/nested": "error"
+    "@getify/proper-ternary/nested": "error",
+    "@getify/proper-ternary/parens": "error"
 }
 ```
 
@@ -43,7 +44,8 @@ To load the plugin and enable its rules via a project's `package.json`:
         "@getify/proper-ternary"
     ],
     "rules": {
-        "@getify/proper-ternary/nested": "error"
+        "@getify/proper-ternary/nested": "error",
+        "@getify/proper-ternary/parens": "error"
     }
 }
 ```
@@ -54,6 +56,10 @@ To load the plugin and enable its rules via ESLint CLI parameters, use `--plugin
 
 ```cmd
 eslint .. --plugin='@getify/proper-ternary' --rule='@getify/proper-ternary/nested: error' ..
+```
+
+```cmd
+eslint .. --plugin='@getify/proper-ternary' --rule='@getify/proper-ternary/parens: error' ..
 ```
 
 ### ESLint Node API
@@ -68,6 +74,8 @@ var properTernary = require("@getify/eslint-plugin-proper-ternary");
 var eslinter = new (require("eslint").Linter)();
 
 eslinter.defineRule("@getify/proper-ternary/nested",properTernary.rules.nested);
+
+eslinter.defineRule("@getify/proper-ternary/parens",properTernary.rules.parens);
 ```
 
 Then lint some code like this:
@@ -75,7 +83,8 @@ Then lint some code like this:
 ```js
 eslinter.verify(".. some code ..",{
     rules: {
-        "@getify/proper-ternary/nested": "error"
+        "@getify/proper-ternary/nested": "error",
+        "@getify/proper-ternary/parens": "error"
     }
 });
 ```
@@ -88,6 +97,10 @@ Once the plugin is loaded, the rule can be configured using inline code comments
 /* eslint "@getify/proper-ternary/nested": "error" */
 ```
 
+```js
+/* eslint "@getify/proper-ternary/parens": "error" */
+```
+
 ## Rule: `"nested"`
 
 The **proper-ternary**/*nested* rule controls the nesting of `? :` ternary expressions.
@@ -98,9 +111,7 @@ To turn this rule on:
 "@getify/proper-ternary/nested": "error"
 ```
 
-The main purpose of this rule is to avoid readability harm for `? :` ternary expressions with confusing nesting of other ternary expressions.
-
-By forbidding confusing nesting, the reader can more clearly understand what the ternary will result in.
+The main purpose of this rule is to avoid readability harm for `? :` ternary expressions with confusing nesting of other ternary expressions. By forbidding confusing nesting, the reader can more clearly understand what the ternary will result in.
 
 For example:
 
@@ -110,7 +121,7 @@ var name = userData ? userData.name : "-empty-";
 
 This ternary expression doesn't have any other ternary expression nested in it. It's much clearer to figure out what its behavior will be. Therefore, the **proper-ternary**/*nested* rule would not report any errors.
 
-By contrast, this rule *would* default to reporting errors for each of these statements:
+By default, ternary expression nesting is forbidden **in all three ternary expression clauses**, and nesting depth is furthermore limited to one level. As such, this rule *would* default to **reporting errors** for each of these statements:
 
 ```js
 var name =
@@ -132,7 +143,7 @@ var accountType =
 
 The `name` assignment statement has a ternary expression nested inside the "test" clause of the outer ternary expression. The `email` assignment statement has a ternary expression nested inside the "then" (aka "consequent") clause of the outer ternary expression. The `accountType` assignment statement nests ternary expressions in the "else" (aka "alternate") clauses of their outer ternary expressions. Also, the `accountType` assignment statement has **two levels of nesting**, whereas the `name` and `email` assignment statements each have ternary expressions with **one level of nesting**.
 
-By default, ternary expression nesting is forbidden in all three ternary clauses, and nesting depth is furthermore limited to one level. To allow nesting in a specific clause (`"test"`, `"then"`, and `"else"`), that clause type must be configured on. Additionally, to allow nesting beyond one level, the `"depth"` configuration must be increased.
+To allow nesting in a specific clause (`"test"`, `"then"`, and `"else"`), that clause type must be configured on. To allow nesting beyond one level, the `"depth"` configuration must be increased.
 
 ### Rule Configuration
 
@@ -144,59 +155,357 @@ The **proper-ternary**/*nested* rule can be configured with various combinations
 
 * [`"else"`](#rule-nested-configuration-clauses) (default: `false`) allows a ternary expression nested in the "else" (aka, "alternate") clause of another ternary expression.
 
-* [`"depth"`](#rule-nested-configuration-depth) (default: `1`) controls how many levels of nesting are allowed. To use this option, you must also enable at least one of the `"test"` / `"then"` / `"else"` clause modes.
+* [`"depth"`](#rule-nested-configuration-depth) (default: `1`) controls how many levels of nesting of ternary expressions are allowed. To effectively use this option, you must also enable at least one of the `"test"` / `"then"` / `"else"` clause modes.
+
+**Note:** This rule does not consider stylistic readability affordances like whitespace or parentheses (see [`"parens"` rule](#rule-parens)), only structural questions of nesting.
 
 #### Rule `"nested"` Configuration: Clauses
 
-To configure the `"test"`, `"then"`, and `"else"` rule modes (each default: `false`):
+To configure the `"test"`, `"then"`, or `"else"` rule modes (each default: `false`):
 
 ```json
 "@getify/proper-ternary/nested": [ "error", { "test": true, "then": true, "else": true }
 ```
 
-TODO
+Each clause must be explicitly enabled for nested ternary expressions to be allowed there. Leaving all three clause types disabled effectively disables all ternary expression nesting.
 
-For example:
+##### `"test"` Nesting
 
-```js
-// TODO
-```
-
-TODO
-
-By contrast, this rule *would* report errors for:
+If `"test"` mode is enabled, nesting a ternary expression in the *test* clause looks like this:
 
 ```js
-// TODO
+var name =
+    (typeof isLoggedIn == "function" ? isLoggedIn() : false)
+        ? userData.name
+        : "-empty-";
 ```
 
-TODO
+This form is equivalent to the fairly awkward:
+
+```js
+var name;
+if (
+    (typeof isLoggedIn == "function" || false) && isLoggedIn()
+) {
+    name = userData.name;
+}
+else {
+    name = "-empty-";
+}
+```
+
+The awkward/confusing boolean logic in this `if..else` equivalent form suggests a simpler way to structure the logic:
+
+```js
+var name;
+if (typeof isLoggedIn == "function" && isLoggedIn()) {
+    name = userData.name;
+}
+else {
+    name = "-empty-";
+}
+
+```
+
+And while that logic certainly makes more sense, it illustrates why nesting ternary expressions in the *test* clause is rarer, as there's basically no need for the extra conditional in the first place:
+
+```js
+var name =
+    (typeof isLoggedIn == "function" && isLoggedIn())
+        ? userData.name
+        : "-empty-";
+```
+
+The main reason to prefer the ternary expression form in this case, over the `if..else` form, is that it's more clear in this latter form that there's a single variable `name` being assigned one of two values. With the `if..else` form, there are two separate assignments, so this detail is slightly less obvious.
+
+##### `"then"` Nesting
+
+If the `"then"` mode is enabled, the more common nesting of a ternary expression in the *then* clause of another ternary expression looks like:
+
+```js
+var email =
+    userData != null
+        ? (userData.email != "" ? userData.email : "nobody@email.tld")
+        : "-empty-";
+```
+
+In this form, it's clear that there's a single variable `email` being assigned. The `if..else` equivalent:
+
+```js
+var email;
+if (userData != null) {
+    if (userData.email != "") {
+        email = userData.email;
+    }
+    else {
+        email = "nobody@email.tld";
+    }
+}
+else {
+    email = "-empty-";
+}
+```
+
+In this form, the single assignment (with one of three values) is a little less obvious. Generally, the former ternary expression form would be preferred as a bit more readable in cases like this.
+
+##### `"else"` Nesting
+
+If the `"else"` mode is enabled, nesting a ternary expression in the *else* clause of another ternary expression is perhaps the most readable of the ternary expression nesting variations:
+
+```js
+var accountType =
+    userData.type == 1 ? "admin"   :
+    userData.type == 2 ? "manager" :
+    userData.type == 3 ? "vendor"  :
+    "customer";
+```
+
+In this form, it's fairly clear that there's a single variable `accountType` being assigned one of four values, based on three specific comparisons, with the fourth value being the default "else" value.
+
+The more verbose `if..else if` equivalent:
+
+```js
+var accountType;
+if (userData.type == 1) {
+    accountType = "admin";
+}
+else if (userData.type == 2) {
+    accountType = "manager";
+}
+else if (userData.type == 3) {
+    accountType = "vendor";
+}
+else {
+    accountType = "customer";
+}
+```
+
+The single variable (`accountType`) assignment is a little less obvious in this form, and there's more syntactic noise just to accomplish the same result. So, the ternary expression form may be a bit more preferable.
 
 #### Rule `"nested"` Configuration: `"depth"`
 
 To configure this rule mode (default: `1`):
 
 ```json
-"@getify/proper-ternary/nested": [ "error", { "depth": 3 } ]
+"@getify/proper-ternary/nested": [ "error", { "depth": 1 } ]
 ```
 
-TODO
+If any of the [`"test"` / `"then"` / `"else"` modes](#rule-nested-configuration-clauses) are enabled, you can also control how many levels of ternary expression nesting are allowed with the `"depth"` setting.
+
+For example, by default this rule mode would not report any errors for this ternary expression:
+
+```js
+var accountType =
+    userData.type == 1 ? "admin"   :
+    userData.type == 2 ? "manager" :
+    "customer";
+```
+
+The nesting level is `1` (inside the second/outermost ternary expression).
+
+By contrast, this rule mode *would* by default report errors for:
+
+```js
+var accountType =
+    userData.type == 1 ? "admin"   :
+    userData.type == 2 ? "manager" :
+    userData.type == 3 ? "vendor"  :
+    "customer";
+```
+
+Here, the nesting level is `2` (inside the third/outermost ternary expression), so the default nesting level of `1` would cause an error to be reported for the `userData.type == 3 ? ..` ternary expression.
+
+## Rule: `"parens"`
+
+The **proper-ternary**/*parens* rule requires `( .. )` parentheses surrounding various expression types when they appear in any clause of a ternary expression.
+
+To turn this rule on:
+
+```json
+"@getify/proper-ternary/parens": "error"
+```
+
+The main purpose of this rule is to avoid readability harm for `? :` ternary expressions by requiring disambiguating `( .. )` around any clause's expression if that expression's boundary isn't obvious, such as operator associativity or precedence, for example.
 
 For example:
 
 ```js
-// TODO
+var total = 1 + base ? base * 2 : base * 3;
 ```
 
-TODO
-
-By contrast, this rule *would* report errors for:
+Without looking up operator precedence, a reader may not be confident whether the `1 + ` part belongs to the *test* clause of the ternary, or is added after the ternary is resolved. In other words, that example could reasonably be assumed as either of these:
 
 ```js
-// TODO
+var total = (1 + base) ? base * 2 : base * 3;
+
+// OR
+
+var total = 1 + (base ? base * 2 : base * 3);
 ```
 
-TODO
+Which is it? Because of operator precedence, it's the first one (`(1 + base) ? ..`). But this kind of ambiguity can really harm readability. Moreover, when quickly scanning the code, the `base * 2` and `base * 3` expressions can obscure the location of the `?` and `:` operators and thus the clause boundaries.
+
+Consider a more readable alternative:
+
+```js
+var total = (1 + base) ? (base * 2) : (base * 3);
+```
+
+Yes, the `( .. )` are "unnecessary", but they certainly eliminate the ambiguity from such examples. Readability affordances such as this should be favored.
+
+The default behavior of this rule is very aggressive, in that it requires parentheses around **all clause expressions**; it will **report errors** for each of these ternary expression clauses here:
+
+```js
+var total = base > 1 ? base : minimum;
+```
+
+The `base > 1` expression needs `( .. )` around it, which is probably reasonable to many. But the `base` and `minimum` expressions also require `( .. )` delimiters by default, which is likely more aggressive than desired.
+
+The reason for this aggressive default is to force a decision at configuration time on exactly which expression types need `( .. )` delimiters.
+
+`base` and `minimum` are *simple* expression types, so they can be allowed by disabling the [`"simple"`](#rule-parens-configuration-simple) mode of this rule. The `base > 1` expression is a *comparison* expression, and can be allowed by disabling the [`"comparison"`](#rule-parens-configuration-comparison) mode.
+
+### Rule Configuration
+
+The **proper-ternary**/*parens* rule can be configured with any combination of these modes, applied to expressions in **any of the clauses** of a ternary expression:
+
+* [`"ternary"`](#rule-parens-configuration-ternary) (default: `true`) requires a nested ternary expression to have `( .. )` surrounding it.
+
+* [`"comparison"`](#rule-parens-configuration-comparison) (default: `true`) requires a comparison expression (ie, `x == y`, `x > y`, etc) to have `( .. )` surrounding it.
+
+* [`"logical"`](#rule-parens-configuration-logical) (default: `true`) requires a logical expression (ie, `x && y`, `!x`, etc) to have `( .. )` surrounding it.
+
+* [`"call"`](#rule-parens-configuration-call) (default: `true`) requires a call expression (ie, `foo()`, `new Foo()`, etc) to have `( .. )` surrounding it.
+
+* [`"object"`](#rule-parens-configuration-object) (default: `true`) requires an object or array literal (ie, `{x:1}`, `[1,2]`, etc) to have `( .. )` surrounding it.
+
+* [`"simple"`](#rule-parens-configuration-simple) (default: `true`) requires a simple expression (ie, `x`, `x.y`, `42`, etc) to have `( .. )` surrounding it. It's likely you'll want to disable this mode.
+
+**Note:** Any expression not covered by these modes, such as `x + y`, is considered a *complex* expression. If this rule is enabled, complex expressions always require `( .. )` surrounding them; there is no `"complex"` mode to disable them. Reasoning: if you feel that `x + y * z` is a sufficient expression to not need `( .. )`, then you almost certainly would be inclined to disable all the other above modes too, in which case you should just disable the rule entirely.
+
+#### Rule `"nested"` Configuration: Ternary
+
+To configure this rule mode off (on by default):
+
+```json
+"@getify/proper-ternary/parens": [ "error", { "ternary": false } ]
+```
+
+If this mode is on (default), it will report an error for:
+
+```js
+var x = y ? z : w ? u : v;
+```
+
+To avoid this error, use `( .. )` around the nested ternary:
+
+```js
+var x = y ? z : (w ? u : v);
+```
+
+#### Rule `"nested"` Configuration: Comparison
+
+To configure this rule mode off (on by default):
+
+```json
+"@getify/proper-ternary/parens": [ "error", { "comparison": false } ]
+```
+
+If this mode is on (default), it will report an error for:
+
+```js
+var x = y > 3 ? y : z;
+```
+
+To avoid this error, use `( .. )` around the comparison expression:
+
+```js
+var x = (y > 3) ? y : z;
+```
+
+#### Rule `"nested"` Configuration: Logical
+
+To configure this rule mode off (on by default):
+
+```json
+"@getify/proper-ternary/parens": [ "error", { "logical": false } ]
+```
+
+If this mode is on (default), it will report an error for:
+
+```js
+var x = y && z ? y : z;
+```
+
+To avoid this error, use `( .. )` around the logical expression:
+
+```js
+var x = (y && z) ? y : z;
+```
+
+#### Rule `"nested"` Configuration: Call
+
+To configure this rule mode off (on by default):
+
+```json
+"@getify/proper-ternary/parens": [ "error", { "call": false } ]
+```
+
+If this mode is on (default), it will report an error for:
+
+```js
+var x = y ? foo(y,z) : z;
+```
+
+To avoid this error, use `( .. )` around the call expression:
+
+```js
+var x = y ? ( foo(y,z) ) : z;
+```
+
+#### Rule `"nested"` Configuration: Object
+
+**Note:** This rule mode applies to both array literals (`[1,2]`) and object literals (`{x:1}`).
+
+To configure this rule mode off (on by default):
+
+```json
+"@getify/proper-ternary/parens": [ "error", { "call": false } ]
+```
+
+If this mode is on (default), it will report an error for:
+
+```js
+var x = y ? [y,z] : z;
+```
+
+To avoid this error, use `( .. )` around the array or object expression:
+
+```js
+var x = y ? ( [y,z] ) : z;
+```
+
+#### Rule `"nested"` Configuration: Simple
+
+**Note:** It's very likely that you'll want to turn this mode off, as it's unlikely that you'll want `( .. )` around even simple identifiers or literals.
+
+To configure this rule mode off (on by default):
+
+```json
+"@getify/proper-ternary/parens": [ "error", { "call": false } ]
+```
+
+If this mode is on (default), it will report errors for each clause:
+
+```js
+var x = y ? w.u : 42;
+```
+
+To avoid this error, use `( .. )` around each simple expression:
+
+```js
+var x = (y) ? (w.u) : (42);
+```
 
 ## npm Package
 
