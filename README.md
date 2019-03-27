@@ -26,7 +26,7 @@ To use **proper-ternary**, load it as a plugin into ESLint and configure the rul
 
 If you'd like to use the **proper-ternary** plugin in a recommended configuration preset, you can add the plugin in the `extends` clause of your ESLint configuration, and pick a preset by name:
 
-```json
+```js
 "extends": [
     // ..
     "plugin:@getify/proper-ternary/CONFIG-PRESET-NAME",
@@ -38,7 +38,7 @@ If you'd like to use the **proper-ternary** plugin in a recommended configuratio
 
 The available configuration presets to choose from:
 
-* `getify-says`: This is my personal configuration.
+* `getify-says`: This is my personal configuration. See the [preset definition](/lib/index.js#L5-L12).
 
 * ..TBA..
 
