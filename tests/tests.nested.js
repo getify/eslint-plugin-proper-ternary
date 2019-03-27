@@ -59,15 +59,15 @@ QUnit.test( "NESTED (default): violating", function test(assert){
 	assert.strictEqual( results.length, 4, "only 4 errors" );
 	assert.strictEqual( ruleId1, "@getify/proper-ternary/nested", "ruleId1" );
 	assert.strictEqual( messageId1, "notHere", "messageId1" );
-	assert.ok( /'test' clause/.test(message1), "message1" );
+	assert.ok( message1.includes("'test' clause"), "message1" );
 	assert.strictEqual( ruleId2, "@getify/proper-ternary/nested", "ruleId2" );
 	assert.strictEqual( messageId2, "tooDeep", "messageId2" );
 	assert.strictEqual( ruleId3, "@getify/proper-ternary/nested", "ruleId3" );
 	assert.strictEqual( messageId3, "notHere", "messageId3" );
-	assert.ok( /'then' clause/.test(message3), "message3" );
+	assert.ok( message3.includes("'then' clause"), "message3" );
 	assert.strictEqual( ruleId4, "@getify/proper-ternary/nested", "ruleId4" );
 	assert.strictEqual( messageId4, "notHere", "messageId4" );
-	assert.ok( /'else' clause/.test(message4), "message4" );
+	assert.ok( message4.includes("'else' clause"), "message4" );
 } );
 
 QUnit.test( "NESTED (empty options): violating", function test(assert){
@@ -87,15 +87,15 @@ QUnit.test( "NESTED (empty options): violating", function test(assert){
 	assert.strictEqual( results.length, 4, "only 4 errors" );
 	assert.strictEqual( ruleId1, "@getify/proper-ternary/nested", "ruleId1" );
 	assert.strictEqual( messageId1, "notHere", "messageId1" );
-	assert.ok( /'test' clause/.test(message1), "message1" );
+	assert.ok( message1.includes("'test' clause"), "message1" );
 	assert.strictEqual( ruleId2, "@getify/proper-ternary/nested", "ruleId2" );
 	assert.strictEqual( messageId2, "tooDeep", "messageId2" );
 	assert.strictEqual( ruleId3, "@getify/proper-ternary/nested", "ruleId3" );
 	assert.strictEqual( messageId3, "notHere", "messageId3" );
-	assert.ok( /'then' clause/.test(message3), "message3" );
+	assert.ok( message3.includes("'then' clause"), "message3" );
 	assert.strictEqual( ruleId4, "@getify/proper-ternary/nested", "ruleId4" );
 	assert.strictEqual( messageId4, "notHere", "messageId4" );
-	assert.ok( /'else' clause/.test(message4), "message4" );
+	assert.ok( message4.includes("'else' clause"), "message4" );
 } );
 
 QUnit.test( "NESTED (all on, depth: 1000): conforming", function test(assert){
@@ -129,7 +129,7 @@ QUnit.test( "NESTED (test): violating", function test(assert){
 	var [{ ruleId, messageId, } = {},] = results || [];
 
 	assert.expect( 3 );
-	assert.strictEqual( results.length, 1, "only 1 errors" );
+	assert.strictEqual( results.length, 1, "only 1 error" );
 	assert.strictEqual( ruleId, "@getify/proper-ternary/nested", "ruleId" );
 	assert.strictEqual( messageId, "notHere", "messageId" );
 } );
@@ -154,7 +154,7 @@ QUnit.test( "NESTED (then): violating", function test(assert){
 	var [{ ruleId, messageId, } = {},] = results || [];
 
 	assert.expect( 3 );
-	assert.strictEqual( results.length, 1, "only 1 errors" );
+	assert.strictEqual( results.length, 1, "only 1 error" );
 	assert.strictEqual( ruleId, "@getify/proper-ternary/nested", "ruleId" );
 	assert.strictEqual( messageId, "notHere", "messageId" );
 } );
@@ -179,7 +179,7 @@ QUnit.test( "NESTED (else): violating", function test(assert){
 	var [{ ruleId, messageId, } = {},] = results || [];
 
 	assert.expect( 3 );
-	assert.strictEqual( results.length, 1, "only 1 errors" );
+	assert.strictEqual( results.length, 1, "only 1 error" );
 	assert.strictEqual( ruleId, "@getify/proper-ternary/nested", "ruleId" );
 	assert.strictEqual( messageId, "notHere", "messageId" );
 } );
@@ -204,7 +204,7 @@ QUnit.test( "NESTED (depth: 2): violating", function test(assert){
 	var [{ ruleId, messageId, } = {},] = results || [];
 
 	assert.expect( 3 );
-	assert.strictEqual( results.length, 1, "only 1 errors" );
+	assert.strictEqual( results.length, 1, "only 1 error" );
 	assert.strictEqual( ruleId, "@getify/proper-ternary/nested", "ruleId" );
 	assert.strictEqual( messageId, "tooDeep", "messageId" );
 } );

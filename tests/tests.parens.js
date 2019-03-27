@@ -155,6 +155,11 @@ QUnit.test( "PARENS (all off): conforming", function test(assert){
 QUnit.test( "PARENS (ternary): conforming", function test(assert){
 	var code = `
 		var v1 = x ? y : (x ? y : z);
+		var v2 = x ? y : x == y;
+		var v3 = x ? y : x && y;
+		var v4 = x ? y : foo(x,y);
+		var v5 = x ? y : { x: y };
+		var v6 = x ? y : x.y;
 	`;
 
 	var results = eslinter.verify( code, linterOptions.parensOnlyTernary );
@@ -166,20 +171,30 @@ QUnit.test( "PARENS (ternary): conforming", function test(assert){
 QUnit.test( "PARENS (ternary): violating", function test(assert){
 	var code = `
 		var v1 = x ? y : x ? y : z;
+		var v2 = x ? y : x == y;
+		var v3 = x ? y : x && y;
+		var v4 = x ? y : foo(x,y);
+		var v5 = x ? y : { x: y };
+		var v6 = x ? y : x.y;
 	`;
 
 	var results = eslinter.verify( code, linterOptions.parensOnlyTernary );
 	var [{ ruleId, messageId, } = {},] = results || [];
 
 	assert.expect( 3 );
-	assert.strictEqual( results.length, 1, "only 1 errors" );
+	assert.strictEqual( results.length, 1, "only 1 error" );
 	assert.strictEqual( ruleId, "@getify/proper-ternary/parens", "ruleId" );
 	assert.strictEqual( messageId, "needParens", "messageId" );
 } );
 
 QUnit.test( "PARENS (comparison): conforming", function test(assert){
 	var code = `
-		var v1 = x ? y : (x == y);
+		var v1 = x ? y : x ? y : z;
+		var v2 = x ? y : (x == y);
+		var v3 = x ? y : x && y;
+		var v4 = x ? y : foo(x,y);
+		var v5 = x ? y : { x: y };
+		var v6 = x ? y : x.y;
 	`;
 
 	var results = eslinter.verify( code, linterOptions.parensOnlyComparison );
@@ -190,22 +205,32 @@ QUnit.test( "PARENS (comparison): conforming", function test(assert){
 
 QUnit.test( "PARENS (comparison): violating", function test(assert){
 	var code = `
-		var v1 = x ? y : x == y;
+		var v1 = x ? y : x ? y : z;
+		var v2 = x ? y : x == y;
+		var v3 = x ? y : x && y;
+		var v4 = x ? y : foo(x,y);
+		var v5 = x ? y : { x: y };
+		var v6 = x ? y : x.y;
 	`;
 
 	var results = eslinter.verify( code, linterOptions.parensOnlyComparison );
 	var [{ ruleId, messageId, } = {},] = results || [];
 
 	assert.expect( 3 );
-	assert.strictEqual( results.length, 1, "only 1 errors" );
+	assert.strictEqual( results.length, 1, "only 1 error" );
 	assert.strictEqual( ruleId, "@getify/proper-ternary/parens", "ruleId" );
 	assert.strictEqual( messageId, "needParens", "messageId" );
 } );
 
 QUnit.test( "PARENS (logical): conforming", function test(assert){
 	var code = `
-		var v1 = x ? y : (x && y);
-		var v2 = x ? y : (!z);
+		var v1 = x ? y : x ? y : z;
+		var v2 = x ? y : x == y;
+		var v3 = x ? y : (x && y);
+		var v4 = x ? y : (!z);
+		var v5 = x ? y : foo(x,y);
+		var v6 = x ? y : { x: y };
+		var v7 = x ? y : x.y;
 	`;
 
 	var results = eslinter.verify( code, linterOptions.parensOnlyLogical );
@@ -216,8 +241,13 @@ QUnit.test( "PARENS (logical): conforming", function test(assert){
 
 QUnit.test( "PARENS (logical): violating", function test(assert){
 	var code = `
-		var v1 = x ? y : x && y;
-		var v2 = x ? y : !z;
+		var v1 = x ? y : x ? y : z;
+		var v2 = x ? y : x == y;
+		var v3 = x ? y : x && y;
+		var v4 = x ? y : !z;
+		var v5 = x ? y : foo(x,y);
+		var v6 = x ? y : { x: y };
+		var v7 = x ? y : x.y;
 	`;
 
 	var results = eslinter.verify( code, linterOptions.parensOnlyLogical );
@@ -236,7 +266,12 @@ QUnit.test( "PARENS (logical): violating", function test(assert){
 
 QUnit.test( "PARENS (call): conforming", function test(assert){
 	var code = `
-		var v1 = x ? y : (foo(x,y));
+		var v1 = x ? y : x ? y : z;
+		var v2 = x ? y : x == y;
+		var v3 = x ? y : x && y;
+		var v4 = x ? y : (foo(x,y));
+		var v5 = x ? y : { x: y };
+		var v6 = x ? y : x.y;
 	`;
 
 	var results = eslinter.verify( code, linterOptions.parensOnlyCall );
@@ -247,21 +282,31 @@ QUnit.test( "PARENS (call): conforming", function test(assert){
 
 QUnit.test( "PARENS (call): violating", function test(assert){
 	var code = `
-		var v1 = x ? y : foo(x,y);
+		var v1 = x ? y : x ? y : z;
+		var v2 = x ? y : x == y;
+		var v3 = x ? y : x && y;
+		var v4 = x ? y : foo(x,y);
+		var v5 = x ? y : { x: y };
+		var v6 = x ? y : x.y;
 	`;
 
 	var results = eslinter.verify( code, linterOptions.parensOnlyCall );
 	var [{ ruleId, messageId, } = {},] = results || [];
 
 	assert.expect( 3 );
-	assert.strictEqual( results.length, 1, "only 1 errors" );
+	assert.strictEqual( results.length, 1, "only 1 error" );
 	assert.strictEqual( ruleId, "@getify/proper-ternary/parens", "ruleId" );
 	assert.strictEqual( messageId, "needParens", "messageId" );
 } );
 
 QUnit.test( "PARENS (object): conforming", function test(assert){
 	var code = `
-		var v1 = x ? y : ({ x: y });
+		var v1 = x ? y : x ? y : z;
+		var v2 = x ? y : x == y;
+		var v3 = x ? y : x && y;
+		var v4 = x ? y : foo(x,y);
+		var v5 = x ? y : ({ x: y });
+		var v6 = x ? y : x.y;
 	`;
 
 	var results = eslinter.verify( code, linterOptions.parensOnlyObject );
@@ -272,21 +317,31 @@ QUnit.test( "PARENS (object): conforming", function test(assert){
 
 QUnit.test( "PARENS (object): violating", function test(assert){
 	var code = `
-		var v1 = x ? y : { x : y };
+		var v1 = x ? y : x ? y : z;
+		var v2 = x ? y : x == y;
+		var v3 = x ? y : x && y;
+		var v4 = x ? y : foo(x,y);
+		var v5 = x ? y : { x: y };
+		var v6 = x ? y : x.y;
 	`;
 
 	var results = eslinter.verify( code, linterOptions.parensOnlyObject );
 	var [{ ruleId, messageId, } = {},] = results || [];
 
 	assert.expect( 3 );
-	assert.strictEqual( results.length, 1, "only 1 errors" );
+	assert.strictEqual( results.length, 1, "only 1 error" );
 	assert.strictEqual( ruleId, "@getify/proper-ternary/parens", "ruleId" );
 	assert.strictEqual( messageId, "needParens", "messageId" );
 } );
 
 QUnit.test( "PARENS (simple): conforming", function test(assert){
 	var code = `
-		var v1 = (x) ? (y) : (z);
+		var v1 = (x) ? (y) : (x) ? (y) : (z);
+		var v2 = (x) ? (y) : x == y;
+		var v3 = (x) ? (y) : x && y;
+		var v4 = (x) ? (y) : foo(x,y);
+		var v5 = (x) ? (y) : { x: y };
+		var v6 = (x) ? (y) : (x.y);
 	`;
 
 	var results = eslinter.verify( code, linterOptions.parensOnlySimple );
@@ -297,14 +352,24 @@ QUnit.test( "PARENS (simple): conforming", function test(assert){
 
 QUnit.test( "PARENS (simple): violating", function test(assert){
 	var code = `
-		var v1 = (x) ? (y) : z;
+		var v1 = (x) ? (y) : (x) ? (y) : z;
+		var v2 = (x) ? (y) : x == y;
+		var v3 = (x) ? (y) : x && y;
+		var v4 = (x) ? (y) : foo(x,y);
+		var v5 = (x) ? (y) : { x: y };
+		var v6 = (x) ? (y) : x.y;
 	`;
 
 	var results = eslinter.verify( code, linterOptions.parensOnlySimple );
-	var [{ ruleId, messageId, } = {},] = results || [];
+	var [
+		{ ruleId: ruleId1, messageId: messageId1, } = {},
+		{ ruleId: ruleId2, messageId: messageId2, } = {},
+	] = results || [];
 
-	assert.expect( 3 );
-	assert.strictEqual( results.length, 1, "only 1 errors" );
-	assert.strictEqual( ruleId, "@getify/proper-ternary/parens", "ruleId" );
-	assert.strictEqual( messageId, "needParens", "messageId" );
+	assert.expect( 5 );
+	assert.strictEqual( results.length, 2, "only 2 errors" );
+	assert.strictEqual( ruleId1, "@getify/proper-ternary/parens", "ruleId1" );
+	assert.strictEqual( messageId1, "needParens", "messageId1" );
+	assert.strictEqual( ruleId2, "@getify/proper-ternary/parens", "ruleId2" );
+	assert.strictEqual( messageId2, "needParens", "messageId2" );
 } );

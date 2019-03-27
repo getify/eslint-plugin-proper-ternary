@@ -22,11 +22,13 @@ else {
 
 eslinter.defineRule("@getify/proper-ternary/nested",properTernary.rules.nested);
 eslinter.defineRule("@getify/proper-ternary/parens",properTernary.rules.parens);
+eslinter.defineRule("@getify/proper-ternary/where",properTernary.rules.where);
 
 global.QUnit = require("qunit");
 
 require(path.join("..","tests","qunit.config.js"));
 require(path.join("..","tests","tests.nested.js"));
 require(path.join("..","tests","tests.parens.js"));
+require(path.join("..","tests","tests.where.js"));
 
 QUnit.start();

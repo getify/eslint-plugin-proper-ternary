@@ -16,6 +16,8 @@ The rules defined in this plugin:
 
 * [`"parens"`](#rule-parens): requires surrounding `( .. )` parentheses around specific kinds of expressions in ternary expression clauses.
 
+* [`"where"`](#rule-where): restricts where in program structure ternary expressions can be used: forbidding them as standalone statements, in object properties, as arguments, etc.
+
 ## Enabling The Plugin
 
 To use **proper-ternary**, load it as a plugin into ESLint and configure the rules as desired.
@@ -487,7 +489,7 @@ var x = y ? ( [y,z] ) : z;
 
 #### Rule `"nested"` Configuration: Simple
 
-**Note:** It's very likely that you'll want to turn this mode off, as it's unlikely that you'll want `( .. )` around even simple identifiers or literals.
+**Note:** It's very likely that you'll want to turn this mode off, as it's unlikely that you'll want to require `( .. )` around even simple identifiers and primitive literals.
 
 To configure this rule mode off (on by default):
 
@@ -501,10 +503,375 @@ If this mode is on (default), it will report errors for each clause:
 var x = y ? w.u : 42;
 ```
 
-To avoid this error, use `( .. )` around each simple expression:
+To avoid these errors, use `( .. )` around each ternary clause's expression:
 
 ```js
 var x = (y) ? (w.u) : (42);
+```
+
+## Rule: `"where"`
+
+The **proper-ternary**/*where* rule restricts where in program structure ternary expressions can be used.
+
+To turn this rule on:
+
+```json
+"@getify/proper-ternary/where": "error"
+```
+
+The main purpose of this rule is to avoid readability harm for the program when `? :` ternary expressions are misused. By restricting ternary expressions to certain usages, the ternary-forbidden usages are structured using more appropriate syntax/logic.
+
+For example, some strongly feel ternary expressions should only be used as expressions (meaning conditionally selecting a value) and not as standalone statements like:
+
+```js
+(isLoggedIn(user) && user.admin)
+    ? renderAdminHeader()
+    : renderBasicHeader();
+```
+
+This construct can be confusing to the reader, as it's easy to miss side-effects in either the *then* or *else* clause. A more preferred approach is to use a standalone `if..else` statement:
+
+```js
+if (isLoggedIn(user) && user.admin) {
+    renderAdminHeader();
+}
+else {
+    renderBasicHeader();
+}
+```
+
+This scenario is exactly what the `if..else` statement is best at; abusing a ternary expression to save a few characters is not helpful for readability.
+
+Another example:
+
+```js
+var loginRecord = {
+    name: userData.name,
+    accountType: (
+        userData.type == 1 ? "admin"   :
+        userData.type == 2 ? "manager" :
+        userData.type == 3 ? "vendor"  :
+        "customer"
+    )
+};
+```
+
+Here a ternary is being used inside an object literal, but a perhaps more readable approach would be to first choose the value via a variable assignment:
+
+```js
+var accountType =
+    userData.type == 1 ? "admin"   :
+    userData.type == 2 ? "manager" :
+    userData.type == 3 ? "vendor"  :
+    "customer";
+
+var loginRecord = {
+    name: userData.name,
+    accountType
+};
+```
+
+A similar situation arises with arguments to function calls: because arguments generally don't have obvious names at the call-site, using a ternary expression as an argument can be less readable if for no other reason than lack of any semantic name to describe the value selection. It's often better to perform the ternary conditional value selection in an assignment first, then pass that named variable as the argument.
+
+It can also be harder to read code when a ternary expression is a sub-expression in another expression, such as the unary `!` negation expression below:
+
+```js
+var isAllowed = !(
+    (userSession != null)
+        ? userSession.user.accountType == "customer"
+        : defaultAccountType == "vendor"
+);
+```
+
+The indirect negation logic here is more confusing to the reader. A better approach:
+
+```js
+var basicAccountType =
+    (userSession != null)
+        ? userSession.user.accountType == "customer"
+        : defaultAccountType == "vendor";
+
+var isAllowed = !basicAccountType;
+```
+
+By semantically naming the result of the ternary decision (`basicAccountType`), the negation is clearer to understand.
+
+Of course, in this example, the ternary itself isn't strictly necessary, as the logic could have been structured as:
+
+```js
+var basicAccountType = (
+    (userSession != null && userSession.user.accountType == "customer") ||
+    (defaultAccountType == "vendor")
+);
+
+var isAllowed = !basicAccountType;
+```
+
+Some will prefer the ternary version and others will prefer this non-ternary form.
+
+### Rule Configuration
+
+The **proper-ternary**/*where* rule can be configured with any combination of these modes:
+
+* [`"statement"`](#rule-where-configuration-statement) (default: `true`) forbids a standalone ternary expression statement.
+
+* [`"property"`](#rule-where-configuration-property) (default: `true`) forbids a ternary expression in an object literal property assignment or array literal position assignment.
+
+* [`"argument"`](#rule-where-configuration-argument) (default: `true`) forbids a ternary expression as an argument to a function call.
+
+* [`"return"`](#rule-where-configuration-return) (default: `true`) forbids a ternary expression in a `return` statement of a function, as well as the concise return of an `=>` arrow function.
+
+* [`"default"`](#rule-where-configuration-default) (default: `true`) forbids a ternary expression in a default value expression (function parameters and destructuring patterns).
+
+* [`"sub"`](#rule-where-configuration-sub) (default: `true`) forbids a ternary expression as a sub-expression of a unary/binary operator expression (ie, `1 + (x ? y : z)`).
+
+   **Note:** This rule mode does not control ternary expressions nested in other ternary expressions. For that, use the [`"nested"` rule](#rule-nested).
+
+* [`"assignment"`](#rule-where-configuration-assignment) (default: **`false`**) forbids a ternary expression in assignment statements (using the `=` operator).
+
+   **Note:** Unlike the other rule modes here, this mode is turned off by default, because it's unlikely that you'll want to disable ternary expressions in assignment expressions (ie, `x = y ? z : w`), as this is basically where they're most naturally useful. It's included for completeness sake, but if you're inclined to turn this rule mode on, you perhaps might just consider disabling all ternary expressions with the built-in ["no-ternary" rule](https://eslint.org/docs/rules/no-ternary).
+
+#### Rule `"where"` Configuration: Statement
+
+To configure this rule mode off (on by default):
+
+```json
+"@getify/proper-ternary/where": [ "error", { "statement": false } ]
+```
+
+If this mode is on (default), it will report an error for:
+
+```js
+(isLoggedIn(user) && user.admin)
+    ? renderAdminHeader()
+    : renderBasicHeader();
+```
+
+To avoid this error, use an `if..else` statement instead:
+
+```js
+if (isLoggedIn(user) && user.admin) {
+    renderAdminHeader();
+}
+else {
+    renderBasicHeader();
+}
+```
+
+#### Rule `"where"` Configuration: Property
+
+To configure this rule mode off (on by default):
+
+```json
+"@getify/proper-ternary/where": [ "error", { "property": false } ]
+```
+
+If this mode is on (default), it will report an error for:
+
+```js
+var loginRecord = {
+    name: userData.name,
+    accountType: (
+        userData.type == 1 ? "admin"   :
+        userData.type == 2 ? "manager" :
+        userData.type == 3 ? "vendor"  :
+        "customer"
+    )
+};
+```
+
+To avoid this error, use an `if..else` statement instead:
+
+```js
+var accountType =
+    userData.type == 1 ? "admin"   :
+    userData.type == 2 ? "manager" :
+    userData.type == 3 ? "vendor"  :
+    "customer";
+
+var loginRecord = {
+    name: userData.name,
+    accountType
+};
+```
+
+#### Rule `"where"` Configuration: Property
+
+To configure this rule mode off (on by default):
+
+```json
+"@getify/proper-ternary/where": [ "error", { "property": false } ]
+```
+
+If this mode is on (default), it will report an error for:
+
+```js
+var loginRecord = {
+    name: userData.name,
+    accountType: (
+        userData.type == 1 ? "admin"   :
+        userData.type == 2 ? "manager" :
+        userData.type == 3 ? "vendor"  :
+        "customer"
+    )
+};
+```
+
+To avoid this error, use an `if..else` statement instead:
+
+```js
+var accountType =
+    userData.type == 1 ? "admin"   :
+    userData.type == 2 ? "manager" :
+    userData.type == 3 ? "vendor"  :
+    "customer";
+
+var loginRecord = {
+    name: userData.name,
+    accountType
+};
+```
+
+#### Rule `"where"` Configuration: Argument
+
+To configure this rule mode off (on by default):
+
+```json
+"@getify/proper-ternary/where": [ "error", { "argument": false } ]
+```
+
+If this mode is on (default), it will report an error for:
+
+```js
+checkAccount(
+    (isLoggedIn(user) && user.admin) ? user : defaultUser
+);
+```
+
+To avoid this error, first assign the result of the ternary expression to a variable:
+
+```js
+var accountToCheck =
+    (isLoggedIn(user) && user.admin) ? user : defaultUser;
+
+checkAccount(accountToCheck);
+```
+
+#### Rule `"where"` Configuration: Return
+
+To configure this rule mode off (on by default):
+
+```json
+"@getify/proper-ternary/where": [ "error", { "argument": false } ]
+```
+
+If this mode is on (default), it will report an error for:
+
+```js
+function lookupAccount(userID = -1) {
+    return (
+        userID != -1 ? users[userID] : defaultUser
+    );
+}
+```
+
+To avoid this error, first assign the result of the ternary expression to a variable:
+
+```js
+function lookupAccount(userID = -1) {
+    var user =
+        userID != -1 ? users[userID] : defaultUser;
+
+    return user;
+}
+```
+
+#### Rule `"where"` Configuration: Default
+
+To configure this rule mode off (on by default):
+
+```json
+"@getify/proper-ternary/where": [ "error", { "default": false } ]
+```
+
+If this mode is on (default), it will report an error for:
+
+```js
+function createUser(data,cb = data.adminUser ? onAdminUser : () => {}) {
+    // ..
+    cb(user);
+}
+```
+
+To avoid this error, (re)assign the variable manually:
+
+```js
+function createUser(data,cb) {
+    cb =
+        cb !== undefined ? cb          :
+        data.adminUser   ? onAdminUser :
+        () => {};
+
+    // ..
+    cb(user);
+}
+```
+
+#### Rule `"where"` Configuration: Sub
+
+To configure this rule mode off (on by default):
+
+```json
+"@getify/proper-ternary/where": [ "error", { "sub": false } ]
+```
+
+If this mode is on (default), it will report an error for:
+
+```js
+var isAllowed = !(
+    (userSession != null)
+        ? userSession.user.accountType == "customer"
+        : defaultAccountType == "vendor"
+);
+```
+
+To avoid this error, first assign the result of the ternary expression to a variable:
+
+```js
+var basicAccountType =
+    (userSession != null)
+        ? userSession.user.accountType == "customer"
+        : defaultAccountType == "vendor";
+
+var isAllowed = !basicAccountType;
+```
+
+#### Rule `"where"` Configuration: Assignment
+
+**Note:** It's unlikely that you'll want to disable ternary expressions in assignment expressions (ie, `x = y ? z : w`), as this is basically where they're most naturally useful. This rule mode is included for completeness sake, but if you're inclined to turn it on, you perhaps might just consider disabling all ternary expressions with the built-in ["no-ternary" rule](https://eslint.org/docs/rules/no-ternary).
+
+To configure this rule mode **on** (**off** by default):
+
+```json
+"@getify/proper-ternary/where": [ "error", { "assignment": true } ]
+```
+
+If this mode is on (default), it will report an error for:
+
+```js
+var name = userRecord != null ? userRecord.name : "Kyle";
+```
+
+To avoid this error, use an `if..else` statement instead of a ternary expression:
+
+```js
+var name;
+if (userRecord != null) {
+    name = userRecord.name;
+}
+else {
+    name = "Kyle";
+}
 ```
 
 ## npm Package
