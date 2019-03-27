@@ -34,7 +34,7 @@ If you'd like to use the **proper-ternary** plugin in a recommended configuratio
 ]
 ```
 
-**Note:** All included configuration presets not only define specific rule configurations but also automatically load the plugin itself, so you *don't* need to list *proper-ternary* in the `plugins` clause.
+**Note:** All included configuration presets not only define specific rule configurations but also automatically load the plugin itself, so you *don't* need to list **proper-ternary** in the `plugins` clause.
 
 The available configuration presets to choose from:
 
