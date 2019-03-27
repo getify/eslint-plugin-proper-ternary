@@ -32,7 +32,8 @@ To load the plugin and enable its rules via a local or global `.eslintrc.json` c
 ],
 "rules": {
     "@getify/proper-ternary/nested": "error",
-    "@getify/proper-ternary/parens": "error"
+    "@getify/proper-ternary/parens": "error",
+    "@getify/proper-ternary/where": "error"
 }
 ```
 
@@ -47,7 +48,8 @@ To load the plugin and enable its rules via a project's `package.json`:
     ],
     "rules": {
         "@getify/proper-ternary/nested": "error",
-        "@getify/proper-ternary/parens": "error"
+        "@getify/proper-ternary/parens": "error",
+        "@getify/proper-ternary/where": "error"
     }
 }
 ```
@@ -64,6 +66,10 @@ eslint .. --plugin='@getify/proper-ternary' --rule='@getify/proper-ternary/neste
 eslint .. --plugin='@getify/proper-ternary' --rule='@getify/proper-ternary/parens: error' ..
 ```
 
+```cmd
+eslint .. --plugin='@getify/proper-ternary' --rule='@getify/proper-ternary/where: error' ..
+```
+
 ### ESLint Node API
 
 To use this plugin in Node.js with the ESLint API, require the npm module, and then (for example) pass the rule's definition to `Linter#defineRule(..)`, similar to:
@@ -78,6 +84,8 @@ var eslinter = new (require("eslint").Linter)();
 eslinter.defineRule("@getify/proper-ternary/nested",properTernary.rules.nested);
 
 eslinter.defineRule("@getify/proper-ternary/parens",properTernary.rules.parens);
+
+eslinter.defineRule("@getify/proper-ternary/where",properTernary.rules.where);
 ```
 
 Then lint some code like this:
@@ -86,7 +94,8 @@ Then lint some code like this:
 eslinter.verify(".. some code ..",{
     rules: {
         "@getify/proper-ternary/nested": "error",
-        "@getify/proper-ternary/parens": "error"
+        "@getify/proper-ternary/parens": "error",
+        "@getify/proper-ternary/where": "error"
     }
 });
 ```
@@ -101,6 +110,10 @@ Once the plugin is loaded, the rule can be configured using inline code comments
 
 ```js
 /* eslint "@getify/proper-ternary/parens": "error" */
+```
+
+```js
+/* eslint "@getify/proper-ternary/where": "error" */
 ```
 
 ## Rule: `"nested"`
