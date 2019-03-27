@@ -355,17 +355,13 @@ var total = (1 + base) ? (base * 2) : (base * 3);
 
 Yes, the `( .. )` are "unnecessary", but they certainly eliminate the ambiguity from such examples. Readability affordances such as this should be favored.
 
-The default behavior of this rule is very aggressive, in that it requires parentheses around **all clause expressions**; it will **report errors** for each of these ternary expression clauses here:
+The default behavior of this rule is aggressive, in that it requires parentheses around **all clause expression types** (except simple identifiers/literals); it will **report errors** for each of these ternary expression clauses here:
 
 ```js
-var total = base > 1 ? base : minimum;
+var total = base > 1 ? base * 2 : base * 3;
 ```
 
-The `base > 1` expression needs `( .. )` around it, which is probably reasonable to many. But the `base` and `minimum` expressions also require `( .. )` delimiters by default, which is likely more aggressive than desired.
-
-The reason for this aggressive default is to force a decision at configuration time on exactly which expression types need `( .. )` delimiters.
-
-`base` and `minimum` are *simple* expression types, so they can be allowed by disabling the [`"simple"`](#rule-parens-configuration-simple) mode of this rule. The `base > 1` expression is a *comparison* expression, and can be allowed by disabling the [`"comparison"`](#rule-parens-configuration-comparison) mode.
+The `base > 1` expression is a *comparison* expression, and can be allowed by disabling the [`"comparison"`](#rule-parens-configuration-comparison) mode. The `base * 2` and `base * 3` expressions are *complex*; there is **no mode in this rule** to disable reporting errors for them.
 
 ### Rule Configuration
 
@@ -381,7 +377,7 @@ The **proper-ternary**/*parens* rule can be configured with any combination of t
 
 * [`"object"`](#rule-parens-configuration-object) (default: `true`) requires an object or array literal (ie, `{x:1}`, `[1,2]`, etc) to have `( .. )` surrounding it.
 
-* [`"simple"`](#rule-parens-configuration-simple) (default: `true`) requires a simple expression (ie, `x`, `x.y`, `42`, etc) to have `( .. )` surrounding it. It's likely you'll want to disable this mode.
+* [`"simple"`](#rule-parens-configuration-simple) (**default: `false`**) requires a simple expression (ie, `x`, `x.y`, `42`, etc) to have `( .. )` surrounding it. It's likely you'll want to keep this mode disabled (default).
 
 **Note:** Any expression not covered by these modes, such as `x + y`, is considered a *complex* expression. If this rule is enabled, complex expressions always require `( .. )` surrounding them; there is no `"complex"` mode to disable them. Reasoning: if you feel that `x + y * z` is a sufficient expression to not need `( .. )`, then you almost certainly would be inclined to disable all the other above modes too, in which case you should just disable the rule entirely.
 
@@ -472,7 +468,7 @@ var x = y ? ( foo(y,z) ) : z;
 To configure this rule mode off (on by default):
 
 ```json
-"@getify/proper-ternary/parens": [ "error", { "call": false } ]
+"@getify/proper-ternary/parens": [ "error", { "object": false } ]
 ```
 
 If this mode is on (default), it will report an error for:
@@ -489,15 +485,15 @@ var x = y ? ( [y,z] ) : z;
 
 #### Rule `"nested"` Configuration: Simple
 
-**Note:** It's very likely that you'll want to turn this mode off, as it's unlikely that you'll want to require `( .. )` around even simple identifiers and primitive literals.
+**Note:** It's very likely that you'll want to keep this mode off (default), as it's unlikely that you'll want to require `( .. )` around even simple identifiers and primitive literals.
 
-To configure this rule mode off (on by default):
+To configure this rule mode **on** (**off** by default):
 
 ```json
-"@getify/proper-ternary/parens": [ "error", { "call": false } ]
+"@getify/proper-ternary/parens": [ "error", { "simple": true } ]
 ```
 
-If this mode is on (default), it will report errors for each clause:
+If this mode is on, it will report errors for each clause:
 
 ```js
 var x = y ? w.u : 42;
