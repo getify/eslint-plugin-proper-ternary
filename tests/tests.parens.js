@@ -336,6 +336,7 @@ QUnit.test( "PARENS (simple): conforming", function test(assert){
 		var v4 = (x) ? (y) : foo(x,y);
 		var v5 = (x) ? (y) : { x: y };
 		var v6 = (x) ? (y) : (x.y);
+		var v7 = (x) ? (y) : (\`z\`);
 	`;
 
 	var results = eslinter.verify( code, linterOptions.parensOnlySimple );
@@ -352,18 +353,22 @@ QUnit.test( "PARENS (simple): violating", function test(assert){
 		var v4 = (x) ? (y) : foo(x,y);
 		var v5 = (x) ? (y) : { x: y };
 		var v6 = (x) ? (y) : x.y;
+		var v7 = (x) ? (y) : \`z\`;
 	`;
 
 	var results = eslinter.verify( code, linterOptions.parensOnlySimple );
 	var [
 		{ ruleId: ruleId1, messageId: messageId1, } = {},
 		{ ruleId: ruleId2, messageId: messageId2, } = {},
+		{ ruleId: ruleId3, messageId: messageId3, } = {},
 	] = results || [];
 
-	assert.expect( 5 );
-	assert.strictEqual( results.length, 2, "only 2 errors" );
+	assert.expect( 7 );
+	assert.strictEqual( results.length, 3, "only 3 errors" );
 	assert.strictEqual( ruleId1, "@getify/proper-ternary/parens", "ruleId1" );
 	assert.strictEqual( messageId1, "needParens", "messageId1" );
 	assert.strictEqual( ruleId2, "@getify/proper-ternary/parens", "ruleId2" );
 	assert.strictEqual( messageId2, "needParens", "messageId2" );
+	assert.strictEqual( ruleId3, "@getify/proper-ternary/parens", "ruleId3" );
+	assert.strictEqual( messageId3, "needParens", "messageId3" );
 } );
