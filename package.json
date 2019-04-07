@@ -1,6 +1,6 @@
 {
 	"name": "@getify/eslint-plugin-proper-ternary",
-	"version": "3.0.0",
+	"version": "3.0.1",
 	"description": "ESLint rules to ensure proper usage of ternary/conditional expressions",
 	"main": "./lib/index.js",
 	"scripts": {
@@ -19,7 +19,7 @@
 	"dependencies": {},
 	"devDependencies": {
 		"coveralls": "~3.0.2",
-		"eslint": "~5.15.0",
+		"eslint": "~5.16.0",
 		"qunit": "~2.9.1",
 		"terser": "~3.17.0"
 	},
